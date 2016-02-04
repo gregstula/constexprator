@@ -1,4 +1,4 @@
-#!/bin/sh 
+#/bin/sh 
 exec ruby -x "$0" "$@"
 #!ruby -W0
 #
@@ -14,24 +14,9 @@ module Lic
   DIR = "choosealicense.com/_licenses/"
   REGEX = /(\.html)$/
 
-  def self.lucky_word
-    words = "/usr/share/dict/words"
-    word = ""
-    if not File.exists?(words)
-      word = "youre_not_using_a_real_unix_lmao"
-    else
-      dict = File.foreach(words).map { |line| line.split("\n") }
-      count = dict.count
-      num = rand(count)
-      word = dict[num][0]
-    end 
-    word
-  end
-
-  def self.constexpr_power f
+  def self.constexpr_power(f, delim)
     raw_name = File.basename(f,File.extname(f))
     header = "#{raw_name}.hpp"
-    delim = lucky_word 
 
     File.open("#{header}", 'w') do |ofstream|
       # prepend include guard and constexpr raw string utf8 literal syntax
@@ -42,14 +27,30 @@ module Lic
     end
     # append closing delimeter for raw string literal
     File.write("#{header}", ")#{delim}\"\n#endif", File.size("#{header}"), mode: 'a')
+    puts "#{raw_name}"
   end # def self.constexpr_is_power
 
 end # module Lic
 
+# not thread safe
+def self.lucky_word
+  words = "/usr/share/dict/words"
+  word = ""
+  if not File.exists?(words)
+    word = "youre_not_using_a_posix_unix_lol"
+  else
+    dict = File.foreach(words).map { |line| line.split("\n") }
+    count = dict.count
+    num = rand(count)
+    word = dict[num][0]
+  end 
+  word
+end
+
+delim = lucky_word
 Dir.foreach(Lic::DIR) do |lic|
   unless lic == '.' || lic == '..'
-    Lic::constexpr_power(lic)
-    puts "#{File.basename(lic,File.extname(lic))}"
+    Lic::constexpr_power(lic, delim)
   end
 end
 
